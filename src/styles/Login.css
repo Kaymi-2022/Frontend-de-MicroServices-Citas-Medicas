@@ -1,0 +1,181 @@
+/* General Styles */
+h1 {
+  text-align: center;
+  color: #ffffff;
+  font-weight: 300;
+  margin: 0 0 40px;
+}
+
+/* Label Styles */
+label {
+  display: block;
+  margin-bottom: 5px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* Input Fields */
+input,
+textarea {
+  font-size: 18px;
+  display: block;
+  width: 100%;
+  padding: 5px;
+  background: #333;
+  border: 1px solid #a0b3b0;
+  color: #ffffff;
+  border-radius: 3px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #1ab188;
+  box-shadow: 0 0 5px rgba(26, 177, 136, 0.5);
+}
+
+/* Form Container */
+.campo {
+  margin-bottom: 20px;
+}
+
+/* Top Row for Name and Last Name */
+.fila-superior:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.fila-superior > div {
+  float: left;
+  width: 48%;
+  margin-right: 4%;
+}
+
+.fila-superior > div:last-child {
+  margin-right: 0;
+}
+
+/* Buttons */
+.boton {
+  border: 0;
+  outline: none;
+  padding: 15px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: #1ab188;
+  color: #ffffff;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.boton:hover,
+.boton:focus {
+  background: #179b77;
+}
+
+.boton-bloque {
+  display: block;
+  width: 100%;
+}
+
+
+/* Tab Navigation */
+.grupo-pestañas {
+  display: flex;
+  list-style: none;
+  padding: 0;
+}
+
+.pestaña {
+  flex: 1;
+  text-align: center;
+}
+
+.pestaña button {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.pestaña.activa button {
+  font-weight: bold;
+  color: #1ab188;
+}
+
+/* Container and Alignment */
+.contenedor {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.hijo {
+  display: flex;
+  width: 900px;
+  gap: 20px;
+}
+
+.info-login {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.contenedor-formulario {
+  width: 50%;
+  background: #444;
+  padding: 30px;
+  border-radius: 5px;
+}
+
+.contenido-pestaña {
+  padding-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+/* index.css */
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+}
+
+.dashboard h1 {
+  color: #333;
+}
+
+.dashboard p {
+  color: #555;
+}
+
+.boton {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #1ab188;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.boton:hover {
+  background-color: #179b77;
+}

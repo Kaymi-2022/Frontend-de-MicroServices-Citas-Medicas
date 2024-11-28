@@ -1,0 +1,31 @@
+.contenedor-Dashboard {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto repeat(2, 1fr); /* Sidebar y contenido principal */
+  grid-template-rows: 100px auto 100px; /* Encabezado, contenido y pie de página */
+  grid-template-areas:
+    "sidebar header header header"
+    "sidebar  contenido contenido contenido"
+    "sidebar  footer footer footer";
+}
+
+.sidebar {
+  grid-area: sidebar; /* Ocupa desde el inicio hasta el pie de página */
+}
+
+.header {
+  grid-area: header;
+}
+
+.contenedor {
+  grid-area: contenido;
+  /*overflow-y: auto; /* Permitir desplazamiento vertical si el contenido es demasiado grande */
+  background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.footer {
+  grid-area: footer;
+  background-color: white; /* Color oscuro para el pie de página */
+}
+/* Responsive adjustments */

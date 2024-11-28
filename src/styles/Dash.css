@@ -1,0 +1,144 @@
+/* Sidebar.css */
+
+:root {
+    --blanco: #E0E0E0;
+    --azul-opacidad: #184463;
+    --bg-menu: #003053;
+    --bg-body: #C7E1FF;
+    --negro: #000;
+    --celeste: #78e7e9;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Quicksand', sans-serif;
+    color: var(--negro);
+    background-color: var(--bg-body);
+    max-height: 100%;
+}
+
+.menu-dashboard {
+    width: 140px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: white;
+    padding: 20px;
+    transition: width 0.3s ease;
+}
+
+.menu-dashboard.open {
+    width: 250px; /* Ancho cuando el menú está expandido */
+    height: 100%;
+}
+
+.top-menu {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.top-menu .logo {
+    display: flex;
+    align-items: center;
+}
+
+.top-menu .logo img {
+    width: 40px;
+    transition: width 0.3s ease;
+}
+
+.top-menu .logo span {
+    font-size: 20px;
+    margin-left: 20px;
+    display: none;
+}
+
+.menu-dashboard.open .top-menu .logo span {
+    display: block;
+}
+
+.top-menu .toggle {
+    cursor: pointer;
+}
+
+.top-menu .toggle i {
+    font-size: 35px;
+}
+
+
+.input-search {
+    width: 100%;
+    margin: 50px 0;
+    background-color: white;
+    border: solid 1px black;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.input-search i {
+    font-size: 30px;
+    margin-right: 20px;
+}
+
+.input-search .input {
+    border: none;
+    outline: none;
+    background-color: transparent;
+    width: 100%;
+    color: black;
+    font-size: 22px;
+    display: none;
+}
+
+.menu-dashboard.open .input-search .input {
+    display: block;
+}
+
+/* MENU LINKS */
+
+.menu .enlace {
+    width: 100%;
+    padding: 20px 0 20px 17px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.3s ease;
+    white-space: nowrap; /* Evita el desbordamiento del texto en el enlace */
+    overflow: hidden; /* Asegura que el contenido no desborde */
+}
+
+.menu .enlace:hover {
+    background: var(--celeste);
+}
+
+.menu .enlace i {
+    margin-right: 20px;
+    font-size: 25px;
+}
+
+.menu .enlace span {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.menu-dashboard.open .menu .enlace span {
+    opacity: 1;
+}
+
+.container{
+    max-height: 690px;
+    display: flex;
+    flex-direction: column;
+}
