@@ -105,9 +105,18 @@ body {
 
 /* MENU LINKS */
 
-.menu .enlace {
+.menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 100px;
+}
+
+.menu li {
+    font-size: 25px;
     width: 100%;
-    padding: 20px 0 20px 17px;
+    padding: 20px 0 20px 30px;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -119,21 +128,22 @@ body {
     overflow: hidden; /* Asegura que el contenido no desborde */
 }
 
-.menu .enlace:hover {
-    background: var(--celeste);
+.menu li:hover {
+    background: var(--bg-menu);
+    color: white;
 }
 
-.menu .enlace i {
+.menu li .icono {
     margin-right: 20px;
     font-size: 25px;
 }
 
-.menu .enlace span {
+.menu li span {
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
-.menu-dashboard.open .menu .enlace span {
+.menu-dashboard.open .menu li span {
     opacity: 1;
 }
 

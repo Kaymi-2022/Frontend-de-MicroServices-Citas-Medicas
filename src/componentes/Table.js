@@ -1,179 +1,172 @@
 import React, { useState, useEffect } from "react";
-import UsersTable from "./Table/UserTable";
-import EditModal from "./Table/EditModal";
-import Swal from "sweetalert2";
+import Swal from "sweetalert2"; // Para mostrar alertas
+import { fetchUsuarios } from "./Service"; // Asegúrate de tener estos métodos en el api.js
 
-const Dashboard = () => {
-  const [usuarios, setUsuarios] = useState([]);
-  const [selectedUsuario, setSelectedUsuario] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchUsuarios = async () => {
-    const token = localStorage.getItem("token");
-    setIsLoading(true); // Mostrar estado de carga
-    try {
-      const response = await fetch(
-        "http://localhost:2222/gateway/gestionUsuarios/listar",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Error al obtener los usuarios.");
-      }
-
-      const data = await response.json();
-      setUsuarios(data.body || []);
-    } catch (error) {
-      console.error("Error al cargar usuarios:", error);
-      Swal.fire("Error", "No se pudo cargar la lista de usuarios.", "error");
-    } finally {
-      setIsLoading(false); // Ocultar estado de carga
-    }
-  };
+const Table = ({ activeEntity }) => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true); // Estado para controlar el loading
 
   useEffect(() => {
-    fetchUsuarios();
-  }, []);
+    // Limpiar el estado de los datos cuando cambia la entidad activa
+    setData([]);
+    setLoading(true);
 
-  const handleSaveUsuario = async (usuario) => {
-    const url = usuario.userId
-      ? `http://localhost:2222/gateway/gestionUsuarios/change/${usuario.userId}`
-      : "http://localhost:2222/gateway/gestionUsuarios/guardar";
-
-    const token = localStorage.getItem("token");
-
-    try {
-      const response = await fetch(url, {
-        method: usuario.userId ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(usuario),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error HTTP ${response.status}: ${errorText}`);
-      }
-
-      const result = await response.json();
-      Swal.fire(
-        "Éxito",
-        result.body?.mensaje || "Operación realizada correctamente.",
-        "success"
-      );
-
-      // Actualizar lista de usuarios
-      setUsuarios((prev) =>
-        usuario.userId
-          ? prev.map((u) =>
-              u.userId === usuario.userId ? result.body.data : u
-            )
-          : [...prev, result.body.data]
-      );
-    } catch (error) {
-      console.error("Error al realizar la solicitud:", error);
-      Swal.fire(
-        "Error",
-        "No se pudo completar la operación. Inténtalo nuevamente.",
-        "error"
-      );
-    }
-  };
-
-  const handleDeleteUsuario = async (id) => {
-    const token = localStorage.getItem("token");
-    try {
-      const result = await Swal.fire({
-        title: "¿Estás seguro?",
-        text: "No podrás revertir esto.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Sí, eliminarlo",
-      });
-
-      if (result.isConfirmed) {
-        const response = await fetch(
-          `http://localhost:2222/gateway/gestionUsuarios/eliminar/${id}`,
-          {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Error al eliminar el usuario.");
+    // Cargar los datos según la entidad activa
+    const loadData = async () => {
+      try {
+        let response;
+        switch (activeEntity) {
+          case "usuarios":
+            response = await fetchUsuarios(); // Llama la API para usuarios
+            break;
+          case "medicos":
+            //response = await fetchMedicos(); // Llama la API para médicos
+            break;
+          case "especialistas":
+            //response = await fetchEspecialistas(); // Llama la API para especialistas
+            break;
+          case "horarios":
+            //response = await fetchHorarios(); // Llama la API para horarios
+            break;
+          default:
+            setLoading(false);
+            return;
         }
 
-        setUsuarios((prev) => prev.filter((usuario) => usuario.userId !== id));
-        Swal.fire("Eliminado", "El usuario ha sido eliminado.", "success");
+        setData(response);
+        setLoading(false);
+      } catch (error) {
+        Swal.fire("Error", `No se pudo cargar los datos de ${activeEntity}`, "error");
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error al eliminar usuario:", error);
-      Swal.fire(
-        "Error",
-        "Hubo un problema al eliminar el usuario tiene citas asociadas.",
-        "error"
-      );
+    };
+
+    loadData();
+  }, [activeEntity]);
+
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
+  if (!data || data.length === 0) {
+    return <div>No hay datos disponibles.</div>;
+  }
+
+  // Renderiza la tabla según la entidad activa
+  const renderTable = () => {
+    switch (activeEntity) {
+      case "usuarios":
+        return renderUsuarios();
+      case "medicos":
+        return renderMedicos();
+      case "especialistas":
+        return renderEspecialistas();
+      case "horarios":
+        return renderHorarios();
+      default:
+        return <div>No se ha seleccionado una entidad válida.</div>;
     }
   };
 
-  const handleEditUsuario = (usuario) => {
-    setSelectedUsuario(usuario);
-    showModal();
-  };
-
-  const handleAddUsuario = () => {
-    setSelectedUsuario(null);
-    showModal();
-  };
-
-  const showModal = () => {
-    const modalElement = document.getElementById("editModal");
-    if (modalElement) {
-      // Elimina aria-hidden cuando el modal se muestra
-      modalElement.removeAttribute("aria-hidden");
-
-      // Usa Bootstrap para mostrar el modal
-      const bootstrapModal = new window.bootstrap.Modal(modalElement);
-      bootstrapModal.show();
-    } else {
-      console.error("Modal no encontrado: 'EditModal' está montado.");
-    }
-  };
-
-  return (
-    <div>
-      <div className="container">
-        <h1 className="text-black">Gestión de Usuarios</h1>
-        <div className="d-flex flex-row-reverse me-3">
-          <button onClick={handleAddUsuario} className="btn btn-primary mb-3">
-            Agregar Usuario
-          </button>
-        </div>
-      </div>
-
-      {isLoading ? (
-        <p>Cargando usuarios...</p>
-      ) : (
-        <div className="container fs-6">
-          <UsersTable
-            usuarios={usuarios}
-            onEdit={handleEditUsuario}
-            onDelete={handleDeleteUsuario}
-          />
-          <EditModal usuario={selectedUsuario} onSave={handleSaveUsuario} />
-        </div>
-      )}
-    </div>
+  const renderUsuarios = () => (
+    <table className="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((usuario) => (
+          <tr key={usuario.id}>
+            <td>{usuario.nombre}</td>
+            <td>{usuario.email}</td>
+            <td>
+              <button>Editar</button>
+              <button>Eliminar</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
+
+  const renderMedicos = () => (
+    <table className="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Especialidad</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((medico) => (
+          <tr key={medico.id}>
+            <td>{medico.nombre}</td>
+            <td>{medico.especialidad}</td>
+            <td>
+              <button>Editar</button>
+              <button>Eliminar</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
+  const renderEspecialistas = () => (
+    <table className="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Área de Especialización</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((especialista) => (
+          <tr key={especialista.id}>
+            <td>{especialista.nombre}</td>
+            <td>{especialista.area}</td>
+            <td>
+              <button>Editar</button>
+              <button>Eliminar</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
+  const renderHorarios = () => (
+    <table className="table">
+      <thead>
+        <tr>
+          <th>Día</th>
+          <th>Hora de Inicio</th>
+          <th>Hora de Fin</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((horario) => (
+          <tr key={horario.id}>
+            <td>{horario.dia}</td>
+            <td>{horario.horaInicio}</td>
+            <td>{horario.horaFin}</td>
+            <td>
+              <button>Editar</button>
+              <button>Eliminar</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
+  return <div>{renderTable()}</div>;
 };
 
-export default Dashboard;
+export default Table;

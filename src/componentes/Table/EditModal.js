@@ -1,52 +1,61 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 
-const EditModal = ({ usuario, onSave }) => {
-  const [formData, setFormData] = useState({
-    userId: "",
-    username: "",
-    password: "",
-    nombre: "",
-    apellido: "",
-    telefono: "",
-    email: "",
-    estado: 1,
-    genero: "",
-    role: "",
-  });
-  const [isSaving, setIsSaving] = useState(false); 
+const EditModal = ({ entity, itemToEdit, onSave }) => {
+  const [formData, setFormData] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Sincronizar datos del usuario seleccionado con el formulario
+  // Sincronizar datos del item seleccionado con el formulario
   useEffect(() => {
-    if (usuario) {
-      setFormData({
-        userId: usuario.userId || "",
-        username: usuario.username || "",
-        password: usuario.password || "",
-        nombre: usuario.nombre || "",
-        apellido: usuario.apellido || "",
-        telefono: usuario.telefono || "",
-        email: usuario.email || "",
-        estado: usuario.estado ?? 1,
-        genero: usuario.genero || "",
-        role: usuario.role || "",
-      });
+    if (itemToEdit) {
+      setFormData({ ...itemToEdit });
     } else {
-      // Restablecer el formulario al agregar un nuevo usuario
-      setFormData({
-        userId: "",
-        username: "",
-        password: "",
-        nombre: "",
-        apellido: "",
-        telefono: "",
-        email: "",
-        estado: 1,
-        genero: "",
-        role: "",
-      });
+      // Si no hay item seleccionado, restablecer el formulario
+      setFormData(getInitialFormData(entity));
     }
-  }, [usuario]);
+  }, [itemToEdit, entity]);
+
+  // Inicializar el formulario con datos vacíos dependiendo de la entidad
+  const getInitialFormData = (entity) => {
+    switch (entity) {
+      case "usuarios":
+        return {
+          userId: "",
+          username: "",
+          password: "",
+          nombre: "",
+          apellido: "",
+          telefono: "",
+          email: "",
+          estado: 1,
+          genero: "",
+          role: "",
+        };
+      case "medicos":
+        return {
+          medicoId: "",
+          nombre: "",
+          especialidad: "",
+          email: "",
+        };
+      case "especialistas":
+        return {
+          especialistaId: "",
+          nombre: "",
+          especialidad: "",
+          email: "",
+        };
+      case "horarios":
+        return {
+          horarioId: "",
+          medicoId: "", // Asegurándonos de que 'medicoId' esté presente
+          especialidad: "",
+          hora: "",
+        };
+      default:
+        return {};
+    }
+  };
 
   // Manejar cambios en los inputs
   const handleChange = (e) => {
@@ -57,44 +66,64 @@ const EditModal = ({ usuario, onSave }) => {
     }));
   };
 
-  // Validar datos del formulario
+  // Validar los datos del formulario
   const validateForm = () => {
-    const { username, nombre, apellido, role, email, telefono } = formData;
-
-    if (!username.trim()) {
-      Swal.fire("Error", "El campo 'Username' es obligatorio.", "error");
-      return false;
+    const { nombre, apellido, especialidad, email, role, hora, telefono, medicoId } = formData;
+    switch (entity) {
+      case "usuarios":
+        if (!formData.username.trim()) {
+          Swal.fire("Error", "El campo 'Username' es obligatorio.", "error");
+          return false;
+        }
+        if (!nombre.trim()) {
+          Swal.fire("Error", "El campo 'Nombre' es obligatorio.", "error");
+          return false;
+        }
+        if (!apellido.trim()) {
+          Swal.fire("Error", "El campo 'Apellido' es obligatorio.", "error");
+          return false;
+        }
+        if (!role.trim()) {
+          Swal.fire("Error", "El campo 'Rol' es obligatorio.", "error");
+          return false;
+        }
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          Swal.fire("Error", "El correo electrónico no tiene un formato válido.", "error");
+          return false;
+        }
+        if (telefono && isNaN(telefono)) {
+          Swal.fire("Error", "El número de teléfono debe ser numérico.", "error");
+          return false;
+        }
+        break;
+      case "medicos":
+      case "especialistas":
+        if (!nombre.trim()) {
+          Swal.fire("Error", "El campo 'Nombre' es obligatorio.", "error");
+          return false;
+        }
+        if (!especialidad.trim()) {
+          Swal.fire("Error", "El campo 'Especialidad' es obligatorio.", "error");
+          return false;
+        }
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          Swal.fire("Error", "El correo electrónico no tiene un formato válido.", "error");
+          return false;
+        }
+        break;
+      case "horarios":
+        if (!hora.trim()) {
+          Swal.fire("Error", "El campo 'Hora' es obligatorio.", "error");
+          return false;
+        }
+        if (!medicoId.trim()) { // Validación para el campo 'medicoId'
+          Swal.fire("Error", "El campo 'Médico' es obligatorio.", "error");
+          return false;
+        }
+        break;
+      default:
+        return false;
     }
-
-    if (!nombre.trim()) {
-      Swal.fire("Error", "El campo 'Nombre' es obligatorio.", "error");
-      return false;
-    }
-
-    if (!apellido.trim()) {
-      Swal.fire("Error", "El campo 'Apellido' es obligatorio.", "error");
-      return false;
-    }
-
-    if (!role.trim()) {
-      Swal.fire("Error", "El campo 'Rol' es obligatorio.", "error");
-      return false;
-    }
-
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      Swal.fire(
-        "Error",
-        "El correo electrónico no tiene un formato válido.",
-        "error"
-      );
-      return false;
-    }
-
-    if (telefono && isNaN(telefono)) {
-      Swal.fire("Error", "El número de teléfono debe ser numérico.", "error");
-      return false;
-    }
-
     return true;
   };
 
@@ -103,9 +132,10 @@ const EditModal = ({ usuario, onSave }) => {
     if (!validateForm()) return;
 
     setIsSaving(true); // Bloquear el botón de guardar mientras se guarda
+
     try {
       await onSave(formData); // Llamar a la función proporcionada por el padre
-      Swal.fire("Éxito", "Usuario guardado correctamente.", "success");
+      Swal.fire("Éxito", `${entity.charAt(0).toUpperCase() + entity.slice(1)} guardado correctamente.`, "success");
 
       // Cerrar el modal
       const modalElement = document.getElementById("editModal");
@@ -114,9 +144,170 @@ const EditModal = ({ usuario, onSave }) => {
         if (bootstrapModal) bootstrapModal.hide();
       }
     } catch (error) {
-      Swal.fire("Error", "No se pudo guardar el usuario.", "error");
+      Swal.fire("Error", `No se pudo guardar el ${entity}.`, "error");
     } finally {
       setIsSaving(false); // Habilitar nuevamente el botón
+    }
+  };
+
+  // Renderizar el formulario según la entidad
+  const renderFormFields = () => {
+    switch (entity) {
+      case "usuarios":
+        return (
+          <>
+            <div className="mb-3">
+              <label htmlFor="username" className="form-label">Username</label>
+              <input
+                type="text"
+                className="form-control"
+                id="username"
+                name="username"
+                value={formData.username || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">Password</label>
+              <input
+                type="password"
+                className="form-control"
+                id="password"
+                name="password"
+                value={formData.password || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="nombre" className="form-label">Nombre</label>
+              <input
+                type="text"
+                className="form-control"
+                id="nombre"
+                name="nombre"
+                value={formData.nombre || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="apellido" className="form-label">Apellido</label>
+              <input
+                type="text"
+                className="form-control"
+                id="apellido"
+                name="apellido"
+                value={formData.apellido || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="email" className="form-label">Email</label>
+              <input
+                type="email"
+                className="form-control"
+                id="email"
+                name="email"
+                value={formData.email || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="role" className="form-label">Rol</label>
+              <select
+                className="form-select"
+                id="role"
+                name="role"
+                value={formData.role || ""}
+                onChange={handleChange}
+              >
+                <option value="ADMIN">Administrador</option>
+                <option value="USER">Usuario</option>
+                <option value="DOCTOR">Doctor</option>
+              </select>
+            </div>
+            <div className="mb-3">
+              <label htmlFor="estado" className="form-label">Estado</label>
+              <select
+                className="form-select"
+                id="estado"
+                name="estado"
+                value={formData.estado || 1}
+                onChange={handleChange}
+              >
+                <option value={1}>Activo</option>
+                <option value={0}>Inactivo</option>
+              </select>
+            </div>
+          </>
+        );
+      case "medicos":
+      case "especialistas":
+        return (
+          <>
+            <div className="mb-3">
+              <label htmlFor="nombre" className="form-label">Nombre</label>
+              <input
+                type="text"
+                className="form-control"
+                id="nombre"
+                name="nombre"
+                value={formData.nombre || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="especialidad" className="form-label">Especialidad</label>
+              <input
+                type="text"
+                className="form-control"
+                id="especialidad"
+                name="especialidad"
+                value={formData.especialidad || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="email" className="form-label">Email</label>
+              <input
+                type="email"
+                className="form-control"
+                id="email"
+                name="email"
+                value={formData.email || ""}
+                onChange={handleChange}
+              />
+            </div>
+          </>
+        );
+      case "horarios":
+        return (
+          <>
+            <div className="mb-3">
+              <label htmlFor="medicoId" className="form-label">Médico</label>
+              <input
+                type="text"
+                className="form-control"
+                id="medicoId"
+                name="medicoId"
+                value={formData.medicoId || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="hora" className="form-label">Hora</label>
+              <input
+                type="text"
+                className="form-control"
+                id="hora"
+                name="hora"
+                value={formData.hora || ""}
+                onChange={handleChange}
+              />
+            </div>
+          </>
+        );
+      default:
+        return null;
     }
   };
 
@@ -130,9 +321,9 @@ const EditModal = ({ usuario, onSave }) => {
     >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
-          <div className="modal-header text-black">
+          <div className="modal-header">
             <h5 className="modal-title" id="editModalLabel">
-              {formData.userId ? "Editar Usuario" : "Agregar Usuario"}
+              {itemToEdit ? `${entity.charAt(0).toUpperCase() + entity.slice(1)} - Editar` : `${entity.charAt(0).toUpperCase() + entity.slice(1)} - Agregar`}
             </h5>
             <button
               type="button"
@@ -143,143 +334,7 @@ const EditModal = ({ usuario, onSave }) => {
           </div>
           <div className="modal-body">
             <form>
-              <div className="row mb-3">
-                <div className="col-md-6">
-                  <label htmlFor="username" className="form-label text-black">
-                    Username <span className="text-dark">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="username"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label htmlFor="password" className="form-label text-black">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="row mb-3">
-                <div className="col-md-6">
-                  <label htmlFor="nombre" className="form-label text-black">
-                    Nombre <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="nombre"
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label htmlFor="apellido" className="form-label text-black">
-                    Apellido <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="apellido"
-                    name="apellido"
-                    value={formData.apellido}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="row mb-3">
-                <div className="col-md-6">
-                  <label htmlFor="telefono" className="form-label text-black">
-                    Teléfono
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="telefono"
-                    name="telefono"
-                    value={formData.telefono}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label htmlFor="email" className="form-label text-black">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              <div className="row mb-3">
-                <div className="col-md-6">
-                  <label htmlFor="estado" className="form-label text-black">
-                    Estado
-                  </label>
-                  <select
-                    className="form-select text-black"
-                    id="estado"
-                    name="estado"
-                    value={formData.estado}
-                    onChange={handleChange}
-                  >
-                    <option value={1}>Activo</option>
-                    <option value={0}>Inactivo</option>
-                  </select>
-                </div>
-                <div className="col-md-6">
-                  <label htmlFor="genero" className="form-label text-black">
-                    Género
-                  </label>
-                  <select
-                    className="form-select text-black"
-                    id="genero"
-                    name="genero"
-                    value={formData.genero}
-                    onChange={handleChange}
-                  >
-                    <option value="">No especificado</option>
-                    <option value="M">Masculino</option>
-                    <option value="F">Femenino</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="role" className="form-label text-black">
-                  Rol <span className="text-danger">*</span>
-                </label>
-                <select
-                  className="form-select"
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                >
-                  <option value="">Seleccione un rol</option>
-                  <option value="ADMIN">Administrador</option>
-                  <option value="USER">Usuario</option>
-                  <option value="DOCTOR">Doctor</option>
-                </select>
-              </div>
+              {renderFormFields()}
             </form>
           </div>
           <div className="modal-footer">
