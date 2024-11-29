@@ -1,60 +1,77 @@
 import React, { useEffect, useState } from 'react';
-import { fetchEspecialistas, createEspecialista, updateEspecialista, deleteEspecialista } from './Service';
+import { fetchEspecialidades, createEspecialidad, updateEspecialidad, deleteEspecialidad } from './Service';
 
-function EspecialistaList({ token }) {
-  const [especialistas, setEspecialistas] = useState([]);
-  const [selectedEspecialista, setSelectedEspecialista] = useState(null);
+function EspecialidadList({ token }) {
+  const [especialidades, setEspecialidades] = useState([]);
+  const [selectedEspecialidad, setSelectedEspecialidad] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState(null); // Para la vista previa de la foto
+  const [photoFileName, setPhotoFileName] = useState(null); // Para almacenar solo el nombre del archivo
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchEspecialistas(token);
-        setEspecialistas(data);
+        const data = await fetchEspecialidades(token);
+        setEspecialidades(data);
       } catch (error) {
-        console.error('Error al obtener los especialistas:', error);
+        console.error('Error al obtener las especialidades:', error);
       }
     };
 
     fetchData();
   }, [token]);
 
-  const handleCreate = async (newEspecialista) => {
+  const handleCreate = async (newEspecialidad) => {
     try {
-      const createdEspecialista = await createEspecialista(token, newEspecialista);
-      setEspecialistas([...especialistas, createdEspecialista]);
+      const createdEspecialidad = await createEspecialidad(token, newEspecialidad);
+      setEspecialidades([...especialidades, createdEspecialidad]);
     } catch (error) {
-      console.error('Error al crear el especialista:', error);
+      console.error('Error al crear la especialidad:', error);
     }
   };
 
-  const handleUpdate = async (updatedEspecialista) => {
+  const handleUpdate = async (updatedEspecialidad) => {
     try {
-      const updated = await updateEspecialista(token, updatedEspecialista);
-      setEspecialistas(
-        especialistas.map((especialista) =>
-          especialista.id === updated.id ? updated : especialista
+      const updated = await updateEspecialidad(token, updatedEspecialidad);
+      setEspecialidades(
+        especialidades.map((especialidad) =>
+          especialidad.id === updated.id ? updated : especialidad
         )
       );
       setIsEditing(false);
+      setPhotoPreview(null); // Resetear la vista previa de la foto
+      setPhotoFileName(null); // Resetear el nombre del archivo
     } catch (error) {
-      console.error('Error al actualizar el especialista:', error);
+      console.error('Error al actualizar la especialidad:', error);
     }
   };
 
   const handleDelete = async (id) => {
     try {
-      await deleteEspecialista(token, id);
-      setEspecialistas(especialistas.filter((especialista) => especialista.id !== id));
+      await deleteEspecialidad(token, id);
+      setEspecialidades(especialidades.filter((especialidad) => especialidad.id !== id));
     } catch (error) {
-      console.error('Error al eliminar el especialista:', error);
+      console.error('Error al eliminar la especialidad:', error);
+    }
+  };
+
+  // Función para manejar el cambio del archivo de la foto
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setPhotoFileName(file.name); // Guardar solo el nombre del archivo
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result); // Establecer la vista previa de la imagen
+      };
+      reader.readAsDataURL(file); // Leer la imagen como URL
     }
   };
 
   return (
-    <div className="especialista-list">
-      <h2>Especialistas</h2>
-      <button onClick={() => setIsEditing(true)}>Nuevo Especialista</button>
+    <div className="especialidad-list">
+      <h2>Especialidades</h2>
+      <button onClick={() => setIsEditing(true)}>Nueva Especialidad</button>
 
       <table>
         <thead>
@@ -65,13 +82,13 @@ function EspecialistaList({ token }) {
           </tr>
         </thead>
         <tbody>
-          {especialistas.map((especialista) => (
-            <tr key={especialista.id}>
-              <td>{especialista.nombre}</td>
-              <td>{especialista.estado ? 'Activo' : 'Inactivo'}</td>
+          {especialidades.map((especialidad) => (
+            <tr key={especialidad.id}>
+              <td>{especialidad.nombre}</td>
+              <td>{especialidad.estado === 1 ? 'Activo' : 'Inactivo'}</td>
               <td>
-                <button onClick={() => { setSelectedEspecialista(especialista); setIsEditing(true); }}>Editar</button>
-                <button onClick={() => handleDelete(especialista.id)}>Eliminar</button>
+                <button onClick={() => { setSelectedEspecialidad(especialidad); setIsEditing(true); }}>Editar</button>
+                <button onClick={() => handleDelete(especialidad.id)}>Eliminar</button>
               </td>
             </tr>
           ))}
@@ -80,28 +97,36 @@ function EspecialistaList({ token }) {
 
       {isEditing && (
         <div className="modal">
-          <h3>{selectedEspecialista ? 'Editar Especialista' : 'Crear Especialista'}</h3>
+          <h3>{selectedEspecialidad ? 'Editar Especialidad' : 'Crear Especialidad'}</h3>
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              const especialistaData = {
-                ...selectedEspecialista,
+              const especialidadData = {
+                ...selectedEspecialidad,
                 nombre: e.target.nombre.value,
                 estado: e.target.estado.checked ? 1 : 0,
+                foto: photoFileName, // Solo se envía el nombre del archivo
               };
-              if (selectedEspecialista) {
-                handleUpdate(especialistaData);
+              if (selectedEspecialidad) {
+                handleUpdate(especialidadData);
               } else {
-                handleCreate(especialistaData);
+                handleCreate(especialidadData);
               }
             }}
           >
-            <input type="text" name="nombre" defaultValue={selectedEspecialista?.nombre || ''} placeholder="Nombre" />
+            <input type="text" name="nombre" defaultValue={selectedEspecialidad?.nombre || ''} placeholder="Nombre" />
             <label>
-              <input type="checkbox" name="estado" defaultChecked={selectedEspecialista?.estado === 1} />
+              <input type="checkbox" name="estado" defaultChecked={selectedEspecialidad?.estado === 1} />
               Activo
             </label>
-            <button type="submit">{selectedEspecialista ? 'Actualizar' : 'Crear'}</button>
+            
+            {/* Campo para cargar la foto */}
+            <input type="file" name="foto" onChange={handleFileChange} accept="image/*" />
+            
+            {/* Vista previa de la imagen cargada */}
+            {photoPreview && <img src={photoPreview} alt="Vista previa" style={{ width: '100px', height: 'auto', marginTop: '10px' }} />}
+            
+            <button type="submit">{selectedEspecialidad ? 'Actualizar' : 'Crear'}</button>
             <button type="button" onClick={() => setIsEditing(false)}>Cancelar</button>
           </form>
         </div>
@@ -110,4 +135,4 @@ function EspecialistaList({ token }) {
   );
 }
 
-export default EspecialistaList;
+export default EspecialidadList;

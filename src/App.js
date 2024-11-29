@@ -8,7 +8,6 @@ import FormularioRegistro from './componentes/FormularioRegistro';
 //import GestionUsuarios from './components/GestionUsuarios';
 import Menuservicios from './componentes/Menuservicios';
 import Dashboard from './componentes/Dashboard';
-import Table from './componentes/Table';
 import Servicio3 from './componentes/Servicio3';
 import Servicio4 from './componentes/Servicio4';
 import Servicio5 from './componentes/Servicio5';
@@ -33,10 +32,8 @@ function App() {
           // Mostrar el Dashboard y las rutas de servicios si el usuario está autenticado
           <Routes>
             <Route path="/Menuservicios" element={<Menuservicios />} />
-            <Route path="/Dashboard" element={<Dashboard />} />
-            <Route path="/servicio1" element={<Table />} />
             <Route path="/servicio3" element={<Servicio3 />} />
-            <Route path="/servicio4" element={<Servicio4 />} />
+            <Route path="/servicio4" element={<Dashboard />} />
             <Route path="/servicio5" element={<Servicio5 />} />
             <Route path="*" element={<Menuservicios />} /> {/* Redirigir a Dashboard por defecto */}
           </Routes>

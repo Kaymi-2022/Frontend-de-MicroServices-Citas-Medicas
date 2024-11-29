@@ -11,16 +11,6 @@ function Menuservicios() {
 
   const servicios = serviciosPorRol[rolUsuario] || [];
 
-  // Mensaje de bienvenida cuando se carga el Dashboard
-  React.useEffect(() => {
-    Swal.fire({
-      title: `¡Bienvenido, ${nombreUsuario}!`,
-      text: `Estás en el Dashboard como ${rolUsuario}`,
-      icon: 'info',
-      confirmButtonText: 'Aceptar'
-    });
-  }, [nombreUsuario, rolUsuario]);
-
   const handleLogout = () => {
     Swal.fire({
       title: '¿Estás seguro?',
@@ -80,8 +70,7 @@ function Menuservicios() {
 // Servicios permitidos por rol con sus rutas
 const serviciosPorRol = {
   ADMIN: [
-    { titulo: "Gestion de Personal", descripcion: "Administracion: usuarios especialidades doctores horarios", ruta: "/Dashboard" },
-    { titulo: "Gestión de Usuarios", descripcion: "Administra los usuarios de la plataforma", ruta: "/servicio1" },
+    { titulo: "Gestion de Personal", descripcion: "Administracion: usuarios especialidades doctores horarios", ruta: "/servicio4" },
     { titulo: "Configuración", descripcion: "Configura los parámetros del sistema", ruta: "/servicio3" },
   ],
   USER: [

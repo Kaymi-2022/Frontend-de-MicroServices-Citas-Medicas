@@ -1,21 +1,24 @@
-import React, { useState } from 'react';
-import Swal from 'sweetalert2';
+import React, { useState } from "react";
+import Swal from "sweetalert2";
 
 function FormularioIngreso() {
-  const [username, setNombreUsuario] = useState('');
-  const [password, setContraseña] = useState('');
+  const [username, setNombreUsuario] = useState("");
+  const [password, setContraseña] = useState("");
 
   const manejarEnvio = async (e) => {
     e.preventDefault();
 
     try {
-      const respuesta = await fetch('http://localhost:2222/api/authentication/sign-in', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      const respuesta = await fetch(
+        "http://localhost:2222/api/authentication/sign-in",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        }
+      );
 
       // Verificar si la respuesta tiene contenido antes de llamar a .json()
       let data;
@@ -28,46 +31,52 @@ function FormularioIngreso() {
       }
 
       if (respuesta.ok) {
-
         // Almacenar el token en localStorage
         if (data.token) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('rol', data.role);
-          localStorage.setItem('nombre', data.nombre+' '+data.apellido);
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("rol", data.role);
+          localStorage.setItem("nombre", data.nombre + " " + data.apellido);
           console.log(localStorage.getItem(data));
-
-
         }
+        // Mensaje de bienvenida cuando se carga el Dashboard
+       
+          Swal.fire({
+            title: `¡Bienvenido, ${data.nombre}!`,
+            text: `Estás en el Dashboard como ${data.role}`,
+            icon: "info",
+            confirmButtonText: "Aceptar",
+          });
+        
 
-        window.location.href = "/dashboard";
-      } else if(respuesta.status === 403) {
+        window.location.href = "/Menuservicios";
+      } else if (respuesta.status === 403) {
         Swal.fire({
-          title: 'Error',
-          text: 'Usuario o contraseña incorrectos.',
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
+          title: "Error",
+          text: "Usuario o contraseña incorrectos.",
+          icon: "error",
+          confirmButtonText: "Aceptar",
         });
-      }else {
+      } else {
         Swal.fire({
-          title: 'Error en el ingreso',
-          text: data.message || 'No se pudo iniciar sesión.',
-          icon: 'error',
-          confirmButtonText: 'Intentar de nuevo',
+          title: "Error en el ingreso",
+          text: data.message || "No se pudo iniciar sesión.",
+          icon: "error",
+          confirmButtonText: "Intentar de nuevo",
         });
         setNombreUsuario(username);
         setContraseña(password);
       }
     } catch (error) {
       Swal.fire({
-        title: 'Error',
-        text: 'Ocurrió un error al intentar ingresar. Por favor, inténtelo de nuevo.',
-        icon: 'error',
-        confirmButtonText: 'Aceptar',
+        title: "Error",
+        text: "Ocurrió un error al intentar ingresar. Por favor, inténtelo de nuevo.",
+        icon: "error",
+        confirmButtonText: "Aceptar",
       });
-      console.error('Error de ingreso:', error);
+      console.error("Error de ingreso:", error);
     }
-    setNombreUsuario('');
-    setContraseña('');
+    setNombreUsuario("");
+    setContraseña("");
   };
 
   return (

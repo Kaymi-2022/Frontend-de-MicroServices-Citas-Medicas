@@ -1,172 +1,90 @@
-import React, { useState, useEffect } from "react";
-import Swal from "sweetalert2"; // Para mostrar alertas
-import { fetchUsuarios } from "./Service"; // Asegúrate de tener estos métodos en el api.js
+import React, { useState } from "react";
+import DataTable from "react-data-table-component";
 
-const Table = ({ activeEntity }) => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true); // Estado para controlar el loading
+const UsersTable = ({ usuarios, onEdit, onDelete }) => {
+  const [searchText, setSearchText] = useState("");
 
-  useEffect(() => {
-    // Limpiar el estado de los datos cuando cambia la entidad activa
-    setData([]);
-    setLoading(true);
-
-    // Cargar los datos según la entidad activa
-    const loadData = async () => {
-      try {
-        let response;
-        switch (activeEntity) {
-          case "usuarios":
-            response = await fetchUsuarios(); // Llama la API para usuarios
-            break;
-          case "medicos":
-            //response = await fetchMedicos(); // Llama la API para médicos
-            break;
-          case "especialistas":
-            //response = await fetchEspecialistas(); // Llama la API para especialistas
-            break;
-          case "horarios":
-            //response = await fetchHorarios(); // Llama la API para horarios
-            break;
-          default:
-            setLoading(false);
-            return;
-        }
-
-        setData(response);
-        setLoading(false);
-      } catch (error) {
-        Swal.fire("Error", `No se pudo cargar los datos de ${activeEntity}`, "error");
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [activeEntity]);
-
-  if (loading) {
-    return <div>Cargando...</div>;
-  }
-
-  if (!data || data.length === 0) {
-    return <div>No hay datos disponibles.</div>;
-  }
-
-  // Renderiza la tabla según la entidad activa
-  const renderTable = () => {
-    switch (activeEntity) {
-      case "usuarios":
-        return renderUsuarios();
-      case "medicos":
-        return renderMedicos();
-      case "especialistas":
-        return renderEspecialistas();
-      case "horarios":
-        return renderHorarios();
-      default:
-        return <div>No se ha seleccionado una entidad válida.</div>;
-    }
-  };
-
-  const renderUsuarios = () => (
-    <table className="table">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Email</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((usuario) => (
-          <tr key={usuario.id}>
-            <td>{usuario.nombre}</td>
-            <td>{usuario.email}</td>
-            <td>
-              <button>Editar</button>
-              <button>Eliminar</button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+  // Filtrar usuarios según la búsqueda
+  const filteredUsuarios = usuarios.filter((usuario) =>
+    Object.values(usuario)
+      .join(" ")
+      .toLowerCase()
+      .includes(searchText.toLowerCase())
   );
 
-  const renderMedicos = () => (
-    <table className="table">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Especialidad</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((medico) => (
-          <tr key={medico.id}>
-            <td>{medico.nombre}</td>
-            <td>{medico.especialidad}</td>
-            <td>
-              <button>Editar</button>
-              <button>Eliminar</button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+  // Columnas de la tabla
+  const columns = [
+    { name: "ID", selector: (row) => row.userId, sortable: true },
+    { name: "Username", selector: (row) => row.username, sortable: true },
+    { name: "Nombre", selector: (row) => row.nombre, sortable: true },
+    { name: "Apellido", selector: (row) => row.apellido, sortable: true },
+    { name: "Teléfono", selector: (row) => row.telefono, sortable: true },
+    { name: "Email", selector: (row) => row.email, sortable: true },
+    {
+      name: "Editar",
+      cell: (row) => (
+        <div>
+          <button onClick={() => onEdit(row)} className="btn btn-primary btn-sm">Editar</button>
+        </div>
+      ),
+    },
+    {
+      name: "Eliminar",
+      cell: (row) => (
+        <div>
+          <button onClick={() => onDelete(row.userId)} className="btn btn-danger btn-sm">Eliminar</button>
+        </div>
+      ),
+    },
+  ];
 
-  const renderEspecialistas = () => (
-    <table className="table">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Área de Especialización</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((especialista) => (
-          <tr key={especialista.id}>
-            <td>{especialista.nombre}</td>
-            <td>{especialista.area}</td>
-            <td>
-              <button>Editar</button>
-              <button>Eliminar</button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+  return (
+    <div className="container text-black">
+      <div className="mb-3">
+        <input
+          type="text"
+          placeholder="Buscar..."
+          className="form-control"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: "300px" }}
+        />
+      </div>
+      <DataTable
+        title="Gestión de Usuarios"
+        columns={columns}
+        data={filteredUsuarios}
+        pagination
+        highlightOnHover
+        responsive
+        noDataComponent="No hay usuarios disponibles"
+        customStyles={{
+          header: {
+            style: {
+              fontSize: "30px",
+              backgroundColor: "#f8f9fa", 
+              fontWeight: "bold",
+              textAlign: "center",
+            },
+          },
+          headCells: {
+            style: {
+              fontSize: "14px",
+              fontWeight: "bold",
+              textAlign: "center",
+              padding: "10px", //
+              borderBottom: "1px solid #dee2e6", 
+            },
+          },
+          rows: {
+            style: {
+              fontSize: "14px", // Tamaño de fuente de las filas
+            },
+          },
+        }}
+      />
+    </div>
   );
-
-  const renderHorarios = () => (
-    <table className="table">
-      <thead>
-        <tr>
-          <th>Día</th>
-          <th>Hora de Inicio</th>
-          <th>Hora de Fin</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((horario) => (
-          <tr key={horario.id}>
-            <td>{horario.dia}</td>
-            <td>{horario.horaInicio}</td>
-            <td>{horario.horaFin}</td>
-            <td>
-              <button>Editar</button>
-              <button>Eliminar</button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-
-  return <div>{renderTable()}</div>;
 };
 
-export default Table;
+export default UsersTable;
